@@ -9,6 +9,15 @@
   "entryFile": "apps/gateway/src/main",
   "sourceRoot": "./",
   "projects": {
+    "app-config": {
+      "type": "library",
+      "root": "libs/app-config",
+      "entryFile": "index",
+      "sourceRoot": "libs/app-config/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/app-config/tsconfig.lib.json"
+      }
+    },
     "auth": {
       "type": "application",
       "root": "apps/auth",
@@ -16,6 +25,15 @@
       "sourceRoot": "./",
       "compilerOptions": {
         "tsConfigPath": "apps/auth/tsconfig.app.json"
+      }
+    },
+    "dayjs": {
+      "type": "library",
+      "root": "libs/dayjs",
+      "entryFile": "index",
+      "sourceRoot": "libs/dayjs/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/dayjs/tsconfig.lib.json"
       }
     },
     "employee": {
@@ -27,6 +45,15 @@
         "tsConfigPath": "apps/employee/tsconfig.app.json"
       }
     },
+    "firebase": {
+      "type": "library",
+      "root": "libs/firebase",
+      "entryFile": "index",
+      "sourceRoot": "libs/firebase/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/firebase/tsconfig.lib.json"
+      }
+    },
     "gateway": {
       "type": "application",
       "root": "apps/gateway",
@@ -34,6 +61,33 @@
       "sourceRoot": "./",
       "compilerOptions": {
         "tsConfigPath": "apps/gateway/tsconfig.app.json"
+      }
+    },
+    "history": {
+      "type": "application",
+      "root": "apps/history",
+      "entryFile": "main",
+      "sourceRoot": "apps/history/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/history/tsconfig.app.json"
+      }
+    },
+    "notification": {
+      "type": "application",
+      "root": "apps/notification",
+      "entryFile": "main",
+      "sourceRoot": "apps/notification/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/notification/tsconfig.app.json"
+      }
+    },
+    "redis": {
+      "type": "library",
+      "root": "libs/redis",
+      "entryFile": "index",
+      "sourceRoot": "libs/redis/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/redis/tsconfig.lib.json"
       }
     },
     "utils": {

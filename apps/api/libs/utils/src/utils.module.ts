@@ -1,8 +1,10 @@
 import { Module } from '@nestjs/common';
-import { UtilsService } from './utils.service';
+import { CommonService } from './common.service';
+import { AppConfigModule } from '@app/app-config';
 
 @Module({
-  providers: [UtilsService],
-  exports: [UtilsService],
+  imports: [AppConfigModule],
+  providers: [CommonService],
+  exports: [CommonService],
 })
 export class UtilsModule {}

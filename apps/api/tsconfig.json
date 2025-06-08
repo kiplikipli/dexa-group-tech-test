@@ -17,7 +17,44 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
+    "preserveWatchOutput": true,
     "paths": {
+      "@app/app-config": [
+        "libs/app-config/src"
+      ],
+      "@app/app-config/*": [
+        "libs/app-config/src/*"
+      ],
+      "@app/bcrypt": [
+        "libs/bcrypt/src"
+      ],
+      "@app/bcrypt/*": [
+        "libs/bcrypt/src/*"
+      ],
+      "@app/dayjs": [
+        "libs/dayjs/src"
+      ],
+      "@app/dayjs/*": [
+        "libs/dayjs/src/*"
+      ],
+      "@app/firebase": [
+        "libs/firebase/src"
+      ],
+      "@app/firebase/*": [
+        "libs/firebase/src/*"
+      ],
+      "@app/jwt": [
+        "libs/jwt/src"
+      ],
+      "@app/jwt/*": [
+        "libs/jwt/src/*"
+      ],
+      "@app/redis": [
+        "libs/redis/src"
+      ],
+      "@app/redis/*": [
+        "libs/redis/src/*"
+      ],
       "@app/utils": [
         "libs/utils/src"
       ],

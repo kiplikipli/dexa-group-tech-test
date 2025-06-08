@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { App } from 'supertest/types';
-import { EmployeeModule } from '../src/employee.module';
+import { EmployeeModule } from '../src/employee/employee.module';
 
 describe('EmployeeController (e2e)', () => {
   let app: INestApplication<App>;
