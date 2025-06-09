@@ -7,6 +7,12 @@ export const employeeService = {
     return res.data;
   },
 
+  async getEmployeeByUserId(userId: number) {
+    const res = await apiClient.get(`/employees/user/${userId}`);
+
+    return res.data;
+  },
+
   async createEmployee(data: Record<string, string | number>) {
     const payload = {
       job_title: data.jobTitle,

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -17,6 +17,8 @@ import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { User, Phone, Mail, Briefcase, Lock, Check } from 'lucide-react';
 import { PhotoUpload } from '@/components/photo-upload';
+import { employeeService } from '@/services/employeeService';
+import { useAuthStore } from '@/stores/useAuthStore';
 
 type Employee = {
   id: number;
@@ -48,6 +50,7 @@ export function ProfilePage({ onUpdateEmployee }: ProfileProps) {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPasswordChange, setShowPasswordChange] = useState(false);
   const [message, setMessage] = useState('');
+  const user = useAuthStore((state) => state.user);
 
   const getInitials = (name: string) => {
     return name
@@ -95,6 +98,19 @@ export function ProfilePage({ onUpdateEmployee }: ProfileProps) {
   const handlePhotoUpload = (newPhotoUrl: string) => {
     setPhotoUrl(newPhotoUrl);
   };
+
+  const fetchEmployee = async () => {
+    if (user) {
+      const employee = await employeeService.getEmployeeByUserId(user.id);
+      if (employee) {
+        setEmployee(employee);
+      }
+    }
+  };
+
+  useEffect(() => {
+    fetchEmployee();
+  }, []);
 
   return (
     <div className="space-y-6">
