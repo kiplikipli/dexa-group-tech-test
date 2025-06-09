@@ -92,7 +92,7 @@ export class AttendanceController {
 
   @MessagePattern('attendance.checkOut')
   async checkOut(@Payload() payload: Record<string, any>) {
-    this.logger.log('processing checkIn with payload:');
+    this.logger.log('processing checkOut with payload:');
     this.logger.log(JSON.stringify(payload));
     const parsedPayload = {
       employeeId: payload.employeeId,

@@ -178,12 +178,10 @@ export class AttendanceService {
       },
       savePayload,
     );
-    console.log(todayAttendance);
 
     const updatedAttendance = await this.findOneAttendance({
       id: todayAttendance.id,
     });
-    console.log(updatedAttendance);
     if (!updatedAttendance) {
       throw new Error('Attendance not found after updating');
     }

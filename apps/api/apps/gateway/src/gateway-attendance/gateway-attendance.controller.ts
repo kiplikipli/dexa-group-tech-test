@@ -103,7 +103,7 @@ export class GatewayAttendanceController {
     }
 
     const payload = this.commonService.injectApiKey({
-      userId: authorizedUser.userId,
+      employeeId: authorizedUser.employeeId,
     });
     this.logger.log(`calling attendance service > checkOut with payload:`);
     this.logger.log(JSON.stringify(payload));

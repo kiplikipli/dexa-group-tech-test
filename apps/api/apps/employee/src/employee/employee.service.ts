@@ -77,7 +77,6 @@ export class EmployeeService {
       jobTitle: update.jobTitle,
     };
 
-    console.log({ id });
     await this.employeeRepository.update({ id }, updatedData);
 
     const updatedEmployee = await this.findById(id);
