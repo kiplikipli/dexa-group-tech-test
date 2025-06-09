@@ -34,6 +34,10 @@ export class AttendanceController {
       throw new UnauthorizedException();
     }
 
+    if (!payload.employeeId) {
+      payload['employeeId'] = authorizedUser.employeeId;
+    }
+
     if (
       parseInt(payload.employeeId) !== parseInt(authorizedUser.employeeId) &&
       authorizedUser.role !== 'admin'
