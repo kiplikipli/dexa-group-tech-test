@@ -80,6 +80,31 @@ export class GatewayEmployeeController {
     return response.data;
   }
 
+  @UseGuards(AuthenticatedGuard)
+  @Get('user/:userId')
+  async getEmployeeByUserId(
+    @Param('userId') userId: string,
+    @Req() req: Request,
+  ): Promise<any> {
+    const authorizedUser = req['user'];
+    if (!authorizedUser) {
+      throw new UnauthorizedException();
+    }
+
+    const payload = this.commonService.injectApiKey({
+      userId: parseInt(userId),
+      authorizedUser,
+    });
+    this.logger.log(`calling employee service > findByUserId with payload:`);
+    this.logger.log(JSON.stringify(payload));
+
+    const response = await this.commonService.processObservable<
+      TSuccessResponse<Employee>
+    >(this.client.send('employee.findByUserId', payload));
+
+    return response.data;
+  }
+
   @UseGuards(IsAdminGuard)
   @Get(':id')
   async getEmployee(
