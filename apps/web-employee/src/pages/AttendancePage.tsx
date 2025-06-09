@@ -20,8 +20,11 @@ import {
 } from '@/components/ui/table';
 import { Calendar, Clock, Filter } from 'lucide-react';
 import { attendanceService } from '@/services/attendanceService';
-import dayjs from 'dayjs';
+import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import { Datepicker } from '@/components/ui/datepicker';
+import dayjs from 'dayjs';
+
+dayjs.extend(isSameOrAfter);
 
 type AttendanceRecord = {
   id: number;
@@ -39,6 +42,7 @@ export function AttendancePage() {
     dayjs().startOf('month')
   );
   const [endDate, setEndDate] = useState<dayjs.Dayjs>(dayjs().endOf('month'));
+  const [dateRanges, setDateRanges] = useState<dayjs.Dayjs[]>([]);
 
   const totalWorkingHours = attendanceRecords.reduce((total, record) => {
     return total + (record.totalWorkingSeconds || 0) / 3600;
@@ -48,7 +52,11 @@ export function AttendancePage() {
     (record) => record.checkInTime && record.checkOutTime
   ).length;
 
-  const getStatusBadge = (record: AttendanceRecord) => {
+  const getStatusBadge = (record?: AttendanceRecord) => {
+    if (!record) {
+      return <Badge variant="outline">No Record</Badge>;
+    }
+
     if (record.checkInTime && record.checkOutTime) {
       return (
         <Badge variant="default" className="bg-green-500">
@@ -93,8 +101,21 @@ export function AttendancePage() {
     }
   };
 
+  const getDateRangeDesc = () => {
+    const dates = [];
+    let current = endDate;
+
+    while (current.isSameOrAfter(startDate, 'day')) {
+      dates.push(current);
+      current = current.subtract(1, 'day');
+    }
+
+    return dates;
+  };
+
   useEffect(() => {
     fetchAttendances();
+    setDateRanges(getDateRangeDesc());
   }, [startDate, endDate]);
 
   return (
@@ -196,7 +217,7 @@ export function AttendancePage() {
         </CardHeader>
         <CardContent>
           <div className="rounded-md border">
-            <Table>
+            <Table className="tabular-nums font-mono">
               <TableHeader>
                 <TableRow>
                   <TableHead>Date</TableHead>
@@ -207,37 +228,47 @@ export function AttendancePage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {attendanceRecords.length === 0 ? (
+                {dateRanges.length === 0 ? (
                   <TableRow>
                     <TableCell
                       colSpan={5}
                       className="text-center py-8 text-gray-500"
                     >
-                      No attendance records found for the selected period
+                      Fail parsing date range
                     </TableCell>
                   </TableRow>
                 ) : (
-                  attendanceRecords.map((record) => (
-                    <TableRow key={record.id}>
-                      <TableCell className="font-medium">
-                        {dayjs(record.checkInTime).format('dddd, DD MMMM YYYY')}
-                      </TableCell>
-                      <TableCell>
-                        {record.checkInTime
-                          ? formatDateFromString(record.checkInTime)
-                          : '--:--'}
-                      </TableCell>
-                      <TableCell>
-                        {record.checkOutTime
-                          ? formatDateFromString(record.checkOutTime)
-                          : '--:--'}
-                      </TableCell>
-                      <TableCell>
-                        {getWorkingTimeDuration(record.totalWorkingSeconds)}
-                      </TableCell>
-                      <TableCell>{getStatusBadge(record)}</TableCell>
-                    </TableRow>
-                  ))
+                  dateRanges.map((date, index) => {
+                    const record = attendanceRecords.find((record) => {
+                      if (!record.checkInTime) {
+                        return false;
+                      }
+
+                      return dayjs(record.checkInTime).isSame(date, 'day');
+                    });
+
+                    return (
+                      <TableRow key={index}>
+                        <TableCell className="font-medium">
+                          {date.format('DD MMMM YYYY')}
+                        </TableCell>
+                        <TableCell>
+                          {record && record.checkInTime
+                            ? formatDateFromString(record.checkInTime)
+                            : '--:--'}
+                        </TableCell>
+                        <TableCell>
+                          {record && record.checkOutTime
+                            ? formatDateFromString(record.checkOutTime)
+                            : '--:--'}
+                        </TableCell>
+                        <TableCell>
+                          {getWorkingTimeDuration(record?.totalWorkingSeconds)}
+                        </TableCell>
+                        <TableCell>{getStatusBadge(record)}</TableCell>
+                      </TableRow>
+                    );
+                  })
                 )}
               </TableBody>
             </Table>
