@@ -125,7 +125,11 @@ export class AuthService implements IAuthService {
       throw new UnauthorizedException('Invalid Credentials');
     }
 
-    return this.commonService.omit(user, ['password']);
+    const response = this.commonService.omit(user, [
+      'password',
+      'latestRefreshToken',
+    ]);
+    return response;
   }
 
   async updatePassword(payload: TUpdatePasswordRequest): Promise<any> {

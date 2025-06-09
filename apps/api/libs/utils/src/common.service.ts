@@ -45,7 +45,7 @@ export class CommonService {
     return typeof err === 'object' && err !== null && 'code' in err;
   }
 
-  omit(obj, keys) {
+  omit(obj: Record<string, any>, keys: string[]) {
     return Object.fromEntries(
       Object.entries(obj).filter(([key]) => !keys.includes(key)),
     );
