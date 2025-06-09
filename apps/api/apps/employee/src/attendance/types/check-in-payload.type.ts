@@ -1,3 +1,3 @@
 export type TCheckInPayload = {
-  userId: number;
+  employeeId: number;
 };

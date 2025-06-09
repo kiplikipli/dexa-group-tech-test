@@ -97,7 +97,7 @@ export class AttendanceService {
   async checkIn(payload: TCheckInPayload): Promise<Attendance> {
     const now = this.dayjsService.getCurrentDate();
 
-    const employee = await this.employeeService.findByUserId(payload.userId);
+    const employee = await this.employeeService.findById(payload.employeeId);
     if (!employee) {
       throw new NotFoundException('Employee not found');
     }
@@ -115,7 +115,9 @@ export class AttendanceService {
     }
 
     const savePayload = {
-      employeeId: employee.id,
+      employee: {
+        id: employee.id,
+      },
       checkInTime: now.toISOString(),
     };
     this.logger.log(`saving attendance with payload:`);
@@ -128,7 +130,7 @@ export class AttendanceService {
   async checkOut(payload: TCheckOutPayload): Promise<Attendance> {
     const now = this.dayjsService.getCurrentDate();
 
-    const employee = await this.employeeService.findByUserId(payload.userId);
+    const employee = await this.employeeService.findById(payload.employeeId);
     if (!employee) {
       throw new NotFoundException('Employee not found');
     }
@@ -156,7 +158,9 @@ export class AttendanceService {
     );
 
     const savePayload = {
-      employeeId: employee.id,
+      employee: {
+        id: employee.id,
+      },
       checkOutTime: now.toISOString(),
       totalWorkingSeconds,
     };

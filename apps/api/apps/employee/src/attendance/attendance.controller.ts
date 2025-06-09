@@ -84,7 +84,7 @@ export class AttendanceController {
     this.logger.log('processing checkIn with payload:');
     this.logger.log(JSON.stringify(payload));
     const parsedPayload = {
-      userId: payload.userId,
+      employeeId: payload.employeeId,
     };
 
     return await this.attendanceService.checkIn(parsedPayload);
@@ -95,7 +95,7 @@ export class AttendanceController {
     this.logger.log('processing checkIn with payload:');
     this.logger.log(JSON.stringify(payload));
     const parsedPayload = {
-      userId: payload.userId,
+      employeeId: payload.employeeId,
     };
 
     return await this.attendanceService.checkOut(parsedPayload);
