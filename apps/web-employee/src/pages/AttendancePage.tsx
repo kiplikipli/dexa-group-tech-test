@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Card,
   CardContent,
@@ -8,8 +8,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -20,8 +18,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Calendar, Clock, Filter, Download } from 'lucide-react';
-import Layout from '@/components/Layout';
+import { Calendar, Clock, Filter } from 'lucide-react';
+import { attendanceService } from '@/services/attendanceService';
+import dayjs from 'dayjs';
+import { Datepicker } from '@/components/ui/datepicker';
 
 type AttendanceRecord = {
   id: number;
@@ -31,77 +31,22 @@ type AttendanceRecord = {
   totalWorkingSeconds?: number;
 };
 
-interface AttendanceProps {
-  employeeId?: number;
-}
-
-export function AttendancePage({ employeeId }: AttendanceProps) {
+export function AttendancePage() {
   const [attendanceRecords, setAttendanceRecords] = useState<
     AttendanceRecord[]
   >([]);
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
-
-  // Set default dates to current month
-  const currentDate = new Date();
-  const firstDayOfMonth = new Date(
-    currentDate.getFullYear(),
-    currentDate.getMonth(),
-    1
+  const [startDate, setStartDate] = useState<dayjs.Dayjs>(
+    dayjs().startOf('month')
   );
-  const lastDayOfMonth = new Date(
-    currentDate.getFullYear(),
-    currentDate.getMonth() + 1,
-    0
-  );
+  const [endDate, setEndDate] = useState<dayjs.Dayjs>(dayjs().endOf('month'));
 
-  const defaultStartDate = firstDayOfMonth.toISOString().split('T')[0];
-  const defaultEndDate = lastDayOfMonth.toISOString().split('T')[0];
-
-  const filteredRecords = useMemo(() => {
-    let filtered = attendanceRecords.filter(
-      (record) => record.employeeId === employeeId
-    );
-
-    const filterStartDate = startDate || defaultStartDate;
-    const filterEndDate = endDate || defaultEndDate;
-
-    filtered = filtered.filter((record) => {
-      const recordDate = new Date(record.checkInTime);
-      const start = new Date(filterStartDate);
-      const end = new Date(filterEndDate);
-      return recordDate >= start && recordDate <= end;
-    });
-
-    return filtered.sort(
-      (a, b) =>
-        new Date(b.checkInTime).getTime() - new Date(a.checkInTime).getTime()
-    );
-  }, [
-    attendanceRecords,
-    employeeId,
-    startDate,
-    endDate,
-    defaultStartDate,
-    defaultEndDate,
-  ]);
-
-  const totalWorkingHours = filteredRecords.reduce((total, record) => {
-    return total + (record.totalWorkingSeconds || 0);
+  const totalWorkingHours = attendanceRecords.reduce((total, record) => {
+    return total + (record.totalWorkingSeconds || 0) / 3600;
   }, 0);
 
-  const totalWorkingDays = filteredRecords.filter(
+  const totalWorkingDays = attendanceRecords.filter(
     (record) => record.checkInTime && record.checkOutTime
   ).length;
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      weekday: 'short',
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  };
 
   const getStatusBadge = (record: AttendanceRecord) => {
     if (record.checkInTime && record.checkOutTime) {
@@ -118,36 +63,39 @@ export function AttendancePage({ employeeId }: AttendanceProps) {
   };
 
   const clearFilters = () => {
-    setStartDate('');
-    setEndDate('');
+    setStartDate(dayjs().startOf('month'));
+    setEndDate(dayjs().endOf('month'));
   };
 
-  const exportData = () => {
-    const csvContent = [
-      ['Date', 'Check In', 'Check Out', 'Working Hours', 'Status'],
-      ...filteredRecords.map((record) => [
-        record.checkInTime,
-        record.checkInTime || '',
-        record.checkOutTime || '',
-        record.totalWorkingSeconds?.toString() || '',
-        record.checkInTime && record.checkOutTime
-          ? 'Complete'
-          : record.checkInTime
-          ? 'Incomplete'
-          : 'No Record',
-      ]),
-    ]
-      .map((row) => row.join(','))
-      .join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `attendance-${defaultStartDate}-to-${defaultEndDate}.csv`;
-    a.click();
-    window.URL.revokeObjectURL(url);
+  const formatDateFromString = (dateString: string): string => {
+    return dayjs(dateString).format('HH:mm:ss');
   };
+
+  const getWorkingTimeDuration = (totalWorkingSeconds?: number) => {
+    // convert total working seconds to {hours}h:{minutes}m:{seconds}s
+    if (!totalWorkingSeconds) return '0h:0m:0s';
+    const hours = Math.floor(totalWorkingSeconds / 3600);
+    const minutes = Math.floor((totalWorkingSeconds % 3600) / 60);
+    const seconds = totalWorkingSeconds % 60;
+
+    return `${hours}h:${minutes}m:${seconds}s`;
+  };
+
+  const fetchAttendances = async () => {
+    try {
+      const attendances = await attendanceService.getAttendances({
+        checkInTimeFrom: startDate.toISOString(),
+        checkInTimeTo: endDate.endOf('day').toISOString(),
+      });
+      setAttendanceRecords(attendances);
+    } catch (error) {
+      console.error('Error fetching attendances:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchAttendances();
+  }, [startDate, endDate]);
 
   return (
     <div className="space-y-6">
@@ -218,35 +166,21 @@ export function AttendancePage({ employeeId }: AttendanceProps) {
         <CardContent>
           <div className="flex flex-col sm:flex-row gap-4 items-end">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1">
-              <div className="space-y-2">
-                <Label htmlFor="startDate">Start Date</Label>
-                <Input
-                  id="startDate"
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  placeholder={defaultStartDate}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="endDate">End Date</Label>
-                <Input
-                  id="endDate"
-                  type="date"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  placeholder={defaultEndDate}
-                />
-              </div>
+              <Datepicker
+                defaultValue={startDate}
+                label="Start Date"
+                onChange={(date) => setStartDate(date)}
+              />
+              <Datepicker
+                defaultValue={endDate}
+                label="End Date"
+                onChange={(date) => setEndDate(date)}
+              />
             </div>
             <div className="flex gap-2">
               <Button variant="outline" onClick={clearFilters}>
                 <Filter className="h-4 w-4 mr-2" />
                 Clear
-              </Button>
-              <Button variant="outline" onClick={exportData}>
-                <Download className="h-4 w-4 mr-2" />
-                Export
               </Button>
             </div>
           </div>
@@ -257,7 +191,7 @@ export function AttendancePage({ employeeId }: AttendanceProps) {
         <CardHeader>
           <CardTitle>Attendance History</CardTitle>
           <CardDescription>
-            Showing {filteredRecords.length} records for the selected period
+            Showing {attendanceRecords.length} records for the selected period
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -273,7 +207,7 @@ export function AttendancePage({ employeeId }: AttendanceProps) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredRecords.length === 0 ? (
+                {attendanceRecords.length === 0 ? (
                   <TableRow>
                     <TableCell
                       colSpan={5}
@@ -283,17 +217,23 @@ export function AttendancePage({ employeeId }: AttendanceProps) {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredRecords.map((record) => (
+                  attendanceRecords.map((record) => (
                     <TableRow key={record.id}>
                       <TableCell className="font-medium">
-                        {formatDate(record.checkInTime)}
+                        {dayjs(record.checkInTime).format('dddd, DD MMMM YYYY')}
                       </TableCell>
-                      <TableCell>{record.checkInTime || '--:--'}</TableCell>
-                      <TableCell>{record.checkOutTime || '--:--'}</TableCell>
                       <TableCell>
-                        {record.totalWorkingSeconds
-                          ? `${record.totalWorkingSeconds.toFixed(1)}h`
-                          : '--'}
+                        {record.checkInTime
+                          ? formatDateFromString(record.checkInTime)
+                          : '--:--'}
+                      </TableCell>
+                      <TableCell>
+                        {record.checkOutTime
+                          ? formatDateFromString(record.checkOutTime)
+                          : '--:--'}
+                      </TableCell>
+                      <TableCell>
+                        {getWorkingTimeDuration(record.totalWorkingSeconds)}
                       </TableCell>
                       <TableCell>{getStatusBadge(record)}</TableCell>
                     </TableRow>
