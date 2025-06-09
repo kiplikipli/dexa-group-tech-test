@@ -140,9 +140,7 @@ export class GatewayEmployeeController {
       throw new UnauthorizedException();
     }
 
-    const userId = authorizedUser.id;
     const payload = this.commonService.injectApiKey({
-      userId,
       update: {
         phone: updateProfileData.phone,
       },

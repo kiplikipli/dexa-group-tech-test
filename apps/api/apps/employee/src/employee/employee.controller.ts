@@ -87,12 +87,14 @@ export class EmployeeController {
       employeeId,
       update,
       authorizedUser,
+      true,
     );
   }
 
   @MessagePattern('employee.updateProfile')
   async updateProfile(payload: TUpdateProfilePayload): Promise<Employee> {
-    const { userId, update, authorizedUser } = payload;
+    const { authorizedUser, update } = payload;
+    const userId = authorizedUser.userId;
 
     if (!authorizedUser || this.commonService.isEmptyObject(authorizedUser)) {
       throw new UnauthorizedException();

@@ -46,9 +46,10 @@ export class EmployeeService {
     id: number,
     update: any,
     authorizedUser: TAuthorizedUserRequest,
+    isFromAdmin: boolean = false,
   ): Promise<Employee> {
     this.logger.log(
-      `${JSON.stringify(authorizedUser)} is updating employee ${id}`,
+      `${JSON.stringify(authorizedUser)} is updating employee ${id} from ${isFromAdmin ? 'admin' : 'user'}`,
     );
     const employee = await this.findById(id);
     if (!employee) {
@@ -76,17 +77,15 @@ export class EmployeeService {
       jobTitle: update.jobTitle,
     };
 
-    await this.employeeRepository.update(id, updatedData);
+    console.log({ id });
+    await this.employeeRepository.update({ id }, updatedData);
 
     const updatedEmployee = await this.findById(id);
     if (!updatedEmployee) {
       throw new Error('Employee not found after updating');
     }
 
-    if (
-      !this.commonService.isObjectEqual(oldData, updatedData) &&
-      authorizedUser.role === 'admin'
-    ) {
+    if (this.commonService.isObjectEqual(oldData, updatedData) || isFromAdmin) {
       return updatedEmployee;
     }
 
