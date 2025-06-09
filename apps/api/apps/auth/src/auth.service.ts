@@ -89,8 +89,8 @@ export class AuthService implements IAuthService {
   async refreshToken(
     payload: TRefreshTokenRequest,
   ): Promise<{ accessToken: string }> {
-    const userId = payload.authorizedUser.userId;
     const refreshToken = payload.refreshToken;
+    const userId = payload.userId;
 
     const user = await this.userService.findById(userId);
     if (!user) {
@@ -101,7 +101,7 @@ export class AuthService implements IAuthService {
       throw new UnauthorizedException('Invalid');
     }
 
-    if (!bcrypt.compareSync(refreshToken, user.latestRefreshToken)) {
+    if (refreshToken !== user.latestRefreshToken) {
       throw new UnauthorizedException('Invalid');
     }
 

@@ -46,10 +46,10 @@ export class AuthController {
 
   @MessagePattern('auth.refreshToken')
   async refreshToken(payload: TRefreshTokenRequest): Promise<any> {
-    const authorizedUser = payload.authorizedUser;
-    if (!authorizedUser || this.commonService.isEmptyObject(authorizedUser)) {
-      throw new UnauthorizedException();
+    if (!payload.refreshToken) {
+      throw new BadRequestException('Invalid request payload');
     }
+
     return await this.authService.refreshToken(payload);
   }
 

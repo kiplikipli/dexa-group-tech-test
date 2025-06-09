@@ -84,11 +84,9 @@ export class GatewayAuthController {
     };
   }
 
-  @UseGuards(AuthenticatedGuard)
   @Post('refresh-token')
   @HttpCode(HttpStatus.OK)
   async refreshToken(@Req() req: Request) {
-    const authorizedUser = req['user'];
     const refreshToken = req['cookies']['refreshToken'];
     if (!refreshToken) {
       throw new UnauthorizedException();
@@ -96,7 +94,6 @@ export class GatewayAuthController {
 
     const payload = this.commonService.injectApiKey({
       refreshToken,
-      authorizedUser,
     });
 
     this.logger.log(`calling auth service > refreshToken with payload:`);
@@ -111,7 +108,7 @@ export class GatewayAuthController {
   @UseGuards(AuthenticatedGuard)
   @Post('logout')
   @HttpCode(HttpStatus.OK)
-  async logout(@Req() req: Request) {
+  async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     const authorizedUser = req['user'];
     const payload = this.commonService.injectApiKey({
       userId: authorizedUser.userId,
@@ -124,6 +121,12 @@ export class GatewayAuthController {
       this.client.send('auth.logout', payload),
     );
 
+    res.clearCookie('refreshToken', {
+      httpOnly: true,
+      sameSite: 'strict',
+      secure: process.env.NODE_ENV === 'production',
+      path: '/',
+    });
     return null;
   }
 

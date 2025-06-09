@@ -92,7 +92,7 @@ export class UserService {
 
   async updateRefreshToken(id: number, refreshToken: string): Promise<User> {
     const updatedData = {
-      latestRefreshToken: bcrypt.hashSync(refreshToken, 10),
+      latestRefreshToken: refreshToken,
     };
     await this.userRepository.update(id, updatedData);
 

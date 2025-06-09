@@ -29,7 +29,9 @@ export class EmployeeService {
   ) {}
 
   async getEmployees(): Promise<Employee[]> {
-    return this.employeeRepository.find();
+    return this.employeeRepository.find({
+      order: { id: 'DESC' },
+    });
   }
 
   async findById(id: number): Promise<Employee | null> {
@@ -60,11 +62,18 @@ export class EmployeeService {
       throw new ForbiddenException();
     }
 
+    const oldData = {
+      name: employee.name,
+      email: employee.email,
+      phone: employee.phone,
+      jobTitle: employee.jobTitle,
+    };
+
     const updatedData = {
       name: update.name,
       email: update.email,
       phone: update.phone,
-      job_title: update.job_title,
+      jobTitle: update.jobTitle,
     };
 
     await this.employeeRepository.update(id, updatedData);
@@ -72,6 +81,13 @@ export class EmployeeService {
     const updatedEmployee = await this.findById(id);
     if (!updatedEmployee) {
       throw new Error('Employee not found after updating');
+    }
+
+    if (
+      !this.commonService.isObjectEqual(oldData, updatedData) &&
+      authorizedUser.role === 'admin'
+    ) {
+      return updatedEmployee;
     }
 
     await this.rabbitmqClient.customEmit<TPayloadEmployeeUpdatedEvent>(

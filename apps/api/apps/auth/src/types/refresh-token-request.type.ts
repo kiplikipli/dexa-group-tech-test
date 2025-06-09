@@ -1,5 +1,3 @@
-import { TAuthorizedServiceRequest } from 'types/services/request';
-
-export type TRefreshTokenRequest = TAuthorizedServiceRequest<{
+export type TRefreshTokenRequest = {
   refreshToken: string;
-}>;
+};
