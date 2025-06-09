@@ -31,11 +31,7 @@ type Employee = {
   jobTitle: string;
 };
 
-interface ProfileProps {
-  onUpdateEmployee: (updates: Partial<Employee>) => void;
-}
-
-export function ProfilePage({ onUpdateEmployee }: ProfileProps) {
+export function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [employee, setEmployee] = useState<Employee>({
     id: 0,
@@ -61,12 +57,27 @@ export function ProfilePage({ onUpdateEmployee }: ProfileProps) {
       .toUpperCase();
   };
 
-  const handleSaveProfile = () => {
-    onUpdateEmployee({ phone, photoUrl });
-    setIsEditing(false);
-    toast.success('Profile updated successfully!', {
-      position: 'top-center',
-    });
+  const handleSaveProfile = async () => {
+    try {
+      await employeeService.updateProfile({
+        phone,
+      });
+
+      setIsEditing(false);
+      setEmployee((prev) => ({ ...prev, phone }));
+      toast.success('Profile updated successfully!', {
+        position: 'top-center',
+      });
+    } catch (err) {
+      if (err instanceof AxiosError) {
+        toast.error('Failed to update profile', {
+          position: 'top-center',
+          description: err.response?.data?.error,
+        });
+      }
+
+      console.error(err);
+    }
   };
 
   const handlePasswordChange = async () => {
@@ -107,6 +118,7 @@ export function ProfilePage({ onUpdateEmployee }: ProfileProps) {
       const employee = await employeeService.getEmployeeByUserId(user.id);
       if (employee) {
         setEmployee(employee);
+        setPhone(employee.phone);
       }
     }
   };

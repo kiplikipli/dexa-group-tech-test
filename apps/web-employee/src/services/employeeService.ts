@@ -26,10 +26,7 @@ export const employeeService = {
     return res.data;
   },
 
-  async updateEmployee(
-    employeeId: number,
-    data: Record<string, string | number>
-  ) {
+  async updateProfile(data: Record<string, string | number>) {
     const payload = {
       job_title: data.jobTitle,
       name: data.name,
@@ -37,7 +34,7 @@ export const employeeService = {
       email: data.email,
     };
 
-    const res = await apiClient.put(`/employees/${employeeId}`, payload);
+    const res = await apiClient.put(`/employees/update-profile`, payload);
 
     return res.data;
   },
