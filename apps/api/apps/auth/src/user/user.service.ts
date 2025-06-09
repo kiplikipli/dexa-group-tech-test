@@ -80,7 +80,12 @@ export class UserService {
     const updatedData = {
       password: hashedPassword,
     };
-    await this.userRepository.update(id, updatedData);
+    await this.userRepository.update(
+      {
+        id,
+      },
+      updatedData,
+    );
 
     const updatedUser = await this.findById(id);
     if (!updatedUser) {

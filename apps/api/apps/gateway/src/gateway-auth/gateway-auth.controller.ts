@@ -155,7 +155,7 @@ export class GatewayAuthController {
       updatePasswordRequest;
 
     const payload = this.commonService.injectApiKey({
-      userId: req['user'].id,
+      authorizedUser: req['user'],
       oldPassword,
       newPassword,
       confirmNewPassword,

@@ -133,8 +133,9 @@ export class AuthService implements IAuthService {
   }
 
   async updatePassword(payload: TUpdatePasswordRequest): Promise<any> {
-    const { userId, oldPassword, newPassword, confirmNewPassword } = payload;
-    const user = await this.userService.findById(userId);
+    const { authorizedUser, oldPassword, newPassword, confirmNewPassword } =
+      payload;
+    const user = await this.userService.findById(authorizedUser.userId);
     if (!user) {
       throw new UnauthorizedException('Invalid Credentials');
     }
@@ -148,7 +149,7 @@ export class AuthService implements IAuthService {
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
-    await this.userService.updatePassword(userId, hashedPassword);
+    await this.userService.updatePassword(user.id, hashedPassword);
 
     return true;
   }

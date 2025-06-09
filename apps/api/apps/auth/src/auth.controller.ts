@@ -84,6 +84,11 @@ export class AuthController {
 
   @MessagePattern('auth.updatePassword')
   async updatePassword(payload: TUpdatePasswordRequest): Promise<any> {
+    const authorizedUser = payload.authorizedUser;
+    if (!authorizedUser || this.commonService.isEmptyObject(authorizedUser)) {
+      throw new UnauthorizedException();
+    }
+
     return await this.authService.updatePassword(payload);
   }
 
