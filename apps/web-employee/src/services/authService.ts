@@ -29,4 +29,18 @@ export const authService = {
     const res = await apiClient.get<User>('/auth/me');
     return res.data;
   },
+
+  async updatePassword(params: {
+    oldPassword: string;
+    newPassword: string;
+    confirmNewPassword: string;
+  }) {
+    const payload = {
+      oldPassword: params.oldPassword,
+      newPassword: params.newPassword,
+      confirmNewPassword: params.confirmNewPassword,
+    };
+    const res = await apiClient.put('/auth/update-password', payload);
+    return res.data;
+  },
 };
